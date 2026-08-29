@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import { revalidatePath } from 'next/cache';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder', {
+const stripe = new Stripe(process.env.API_STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-02-24.acacia' as any,
 });
 
@@ -357,7 +357,7 @@ export async function createCheckoutSessionAction(data: {
 
     let sessionUrl = `${origin}/checkout/success?order=${orderNumber}`;
 
-    if (process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes('placeholder')) {
+    if (process.env.API_STRIPE_SECRET_KEY) {
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: lineItems,
