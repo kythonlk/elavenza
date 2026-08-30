@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'elavenza-jwt-secret-change-in-prod
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const authHeader = req.headers.get('authorization');
@@ -17,7 +17,8 @@ export async function GET(
     }
 
     const decoded: any = jwt.verify(token, JWT_SECRET);
-    const orderId = parseInt(params.id);
+    const { id } = await params;
+    const orderId = parseInt(id);
 
     const orderRes = await query(
       `SELECT o.id, o.order_number, o.status, o.subtotal, o.shipping_cost, o.tax, o.total,

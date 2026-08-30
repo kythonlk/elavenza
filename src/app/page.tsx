@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import ProductCard from '@/components/storefront/ProductCard';
 import NewsletterForm from '@/components/storefront/NewsletterForm';
+import HeroBannerCarousel from '@/components/storefront/HeroBannerCarousel';
 import { getCachedFeaturedProducts, getCachedCategories } from '@/lib/cache';
 import type { Metadata } from 'next';
 import {
@@ -12,8 +13,6 @@ import {
   HeartHandshake,
   ArrowRight,
   CheckCircle2,
-  Award,
-  Leaf,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -56,93 +55,8 @@ export default async function HomePage() {
 
   return (
     <div>
-      {/* ── Hero ── */}
-      <section className="relative bg-bg-alt overflow-hidden border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 lg:py-24">
-          <div className="grid lg:grid-cols-12 gap-10 items-center">
-            {/* Left Copy */}
-            <div className="lg:col-span-6 animate-fade-in z-10">
-              <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase mb-5">
-                <Leaf className="w-3.5 h-3.5" />
-                <span>100% Pure Therapeutic Grade · Melbourne</span>
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold text-text leading-[1.12] tracking-tight">
-                Pure Botanicals for{' '}
-                <span className="text-primary italic">Everyday Living</span>
-              </h1>
-              <p className="mt-5 text-base sm:text-lg text-text-muted leading-relaxed max-w-xl">
-                Experience Australia&apos;s finest collection of single essential oils, virgin
-                cold-pressed carrier oils, restorative botanical skincare, and ultrasonic diffusers.
-              </p>
-
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <Link
-                  href="/products"
-                  prefetch={true}
-                  className="inline-flex items-center gap-2.5 bg-primary text-white px-7 py-3.5 rounded-xl font-medium hover:bg-primary-dark transition-all hover:shadow-lg hover:shadow-primary/20 text-sm"
-                >
-                  <span>Explore Collection</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/products?category=essential-oils"
-                  prefetch={true}
-                  className="inline-flex items-center gap-2 border-2 border-primary/30 text-text px-6 py-3.5 rounded-xl font-medium hover:border-primary hover:text-primary transition-all text-sm bg-surface"
-                >
-                  <span>Essential Oils</span>
-                </Link>
-              </div>
-
-              <div className="mt-10 pt-8 border-t border-border grid grid-cols-3 gap-4 text-left">
-                <div>
-                  <p className="font-heading font-bold text-lg text-primary">100% Pure</p>
-                  <p className="text-xs text-text-muted mt-0.5">GC/MS Lab Tested</p>
-                </div>
-                <div>
-                  <p className="font-heading font-bold text-lg text-primary">Free Express</p>
-                  <p className="text-xs text-text-muted mt-0.5">AU Orders Over $75</p>
-                </div>
-                <div>
-                  <p className="font-heading font-bold text-lg text-primary">Ethical</p>
-                  <p className="text-xs text-text-muted mt-0.5">Cruelty-Free & Vegan</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Hero Image */}
-            <div className="lg:col-span-6 relative animate-slide-up">
-              <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl border-4 border-surface">
-                <Image
-                  src="/images/hero-banner.jpg"
-                  alt="Elavenza Pure Australian Essential Oils"
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover object-center transform hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-                <div className="absolute bottom-5 left-5 right-5 bg-surface/90 backdrop-blur-md rounded-2xl p-4 border border-white/40 shadow-lg flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shrink-0">
-                      <Award className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-text">Therapeutic Quality Guarantee</p>
-                      <p className="text-[11px] text-text-muted">
-                        Unadulterated native Australian &amp; world botanicals
-                      </p>
-                    </div>
-                  </div>
-                  <Link href="/about" className="text-xs font-semibold text-primary hover:underline hidden sm:block">
-                    Learn more →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── Hero Banner Carousel ── */}
+      <HeroBannerCarousel />
 
       {/* ── Categories ── */}
       <section className="py-16 md:py-24 bg-surface">
