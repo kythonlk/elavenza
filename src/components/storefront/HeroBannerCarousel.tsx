@@ -250,7 +250,7 @@ export default function HeroBannerCarousel() {
         </div>
 
         {/* Stats strip below image */}
-        <div className="flex divide-x" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', divideColor: 'var(--color-border)' }}>
+        <div className="flex divide-x divide-border" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
           {slide.stats.map((s, i) => (
             <div key={i} className="flex-1 py-3 px-2 text-center">
               <p className="font-heading font-bold text-sm" style={{ color: 'var(--color-primary)' }}>{s.value}</p>
