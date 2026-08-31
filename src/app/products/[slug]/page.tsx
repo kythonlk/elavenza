@@ -4,13 +4,10 @@ import { getCachedProductBySlug, getCachedProductReviews, getCachedProducts } fr
 import ProductDetailClient from '@/components/storefront/ProductDetailClient';
 import type { Metadata } from 'next';
 
+// Product data is loaded from Neon at request time so deployments do not require
+// build-time database connectivity. The cache wrapper still handles revalidation.
+export const dynamic = 'force-dynamic';
 export const revalidate = 60;
-
-// Pre-generate all product pages at build time for instant delivery
-export async function generateStaticParams() {
-  const data = await getCachedProducts({ limit: 100 });
-  return data.products.map((p: any) => ({ slug: p.slug }));
-}
 
 export async function generateMetadata({
   params,

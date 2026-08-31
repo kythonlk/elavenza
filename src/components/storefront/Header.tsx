@@ -100,7 +100,7 @@ export default function Header() {
 
               {/* Account */}
               <Link
-                href="/auth/login"
+                href="/account"
                 className="p-2.5 text-text-muted hover:text-primary hover:bg-bg-alt rounded-full transition-colors hidden sm:flex items-center justify-center"
                 aria-label="Account"
               >
@@ -172,7 +172,7 @@ export default function Header() {
             })}
             <hr className="my-3 border-border" />
             <Link
-              href="/auth/login"
+              href="/account"
               onClick={() => setMenuOpen(false)}
               className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text-muted hover:text-primary"
             >
