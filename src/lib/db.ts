@@ -8,7 +8,7 @@ declare global {
 }
 
 const poolConfig = {
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.NEON_DATABASE_URL || process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
   max: process.env.NODE_ENV === 'production' ? 20 : 10,
   min: 2,                         // keep 2 connections warm

@@ -6,9 +6,10 @@ import jwt from 'jsonwebtoken';
 import { revalidatePath } from 'next/cache';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.API_STRIPE_SECRET_KEY || '', {
+const stripeSecret = process.env.API_STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY;
+const stripe = stripeSecret ? new Stripe(stripeSecret, {
   apiVersion: '2025-02-24.acacia' as any,
-});
+}) : null;
 
 const JWT_SECRET = process.env.JWT_SECRET || 'elavenza-jwt-secret-change-in-production-2024';
 

@@ -22,7 +22,8 @@ export default function LoginPage() {
       if (res.user.role === 'admin') {
         window.location.href = '/admin';
       } else {
-        window.location.href = '/';
+        const redirect = new URLSearchParams(window.location.search).get('redirect');
+        window.location.href = redirect?.startsWith('/') ? redirect : '/account';
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid credentials');
