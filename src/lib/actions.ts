@@ -358,7 +358,7 @@ export async function createCheckoutSessionAction(data: {
 
     let sessionUrl = `${origin}/checkout/success?order=${orderNumber}`;
 
-    if (process.env.API_STRIPE_SECRET_KEY) {
+    if (stripe) {
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: lineItems,

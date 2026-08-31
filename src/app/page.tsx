@@ -20,7 +20,9 @@ export const metadata: Metadata = {
   description: 'Premium 100% pure essential oils, carrier oils, and natural wellness products. Australian owned. Free shipping on orders over $75.',
 };
 
-// Revalidate every 60s — ISR
+// Load catalog data at request time so production builds do not require
+// a live database connection during static prerendering.
+export const dynamic = 'force-dynamic';
 export const revalidate = 60;
 
 const categoryIcons: Record<string, React.ElementType> = {
