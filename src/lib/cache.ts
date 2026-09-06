@@ -7,31 +7,36 @@ import { query } from './db';
 
 export const getCachedFeaturedProducts = unstable_cache(
   async (limit = 8) => {
-    const res = await query(
-      `SELECT p.id, p.name, p.slug, p.short_desc, p.price, p.compare_price,
-              p.sku, p.stock, p.images, p.featured,
-              COALESCE(c.name, '') as category_name,
-              COALESCE(c.slug, '') as category_slug,
-              COALESCE(r.review_count, 0)::int as review_count,
-              COALESCE(r.avg_rating, 5.0)::float as avg_rating
-       FROM products p
-       LEFT JOIN categories c ON p.category_id = c.id
-       LEFT JOIN (
-         SELECT product_id, COUNT(*) as review_count, AVG(rating)::numeric(3,1) as avg_rating
-         FROM reviews WHERE is_approved = true GROUP BY product_id
-       ) r ON p.id = r.product_id
-       WHERE p.is_active = true AND p.featured = true
-       ORDER BY p.created_at DESC
-       LIMIT $1`,
-      [limit]
-    );
-    return res.rows.map(row => ({
-      ...row,
-      price: parseFloat(row.price),
-      compare_price: row.compare_price ? parseFloat(row.compare_price) : null,
-      images: Array.isArray(row.images) ? row.images : [],
-      category: row.category_name ? { name: row.category_name, slug: row.category_slug } : undefined,
-    }));
+    try {
+      const res = await query(
+        `SELECT p.id, p.name, p.slug, p.short_desc, p.price, p.compare_price,
+                p.sku, p.stock, p.images, p.featured,
+                COALESCE(c.name, '') as category_name,
+                COALESCE(c.slug, '') as category_slug,
+                COALESCE(r.review_count, 0)::int as review_count,
+                COALESCE(r.avg_rating, 5.0)::float as avg_rating
+         FROM products p
+         LEFT JOIN categories c ON p.category_id = c.id
+         LEFT JOIN (
+           SELECT product_id, COUNT(*) as review_count, AVG(rating)::numeric(3,1) as avg_rating
+           FROM reviews WHERE is_approved = true GROUP BY product_id
+         ) r ON p.id = r.product_id
+         WHERE p.is_active = true AND p.featured = true
+         ORDER BY p.created_at DESC
+         LIMIT $1`,
+        [limit]
+      );
+      return res.rows.map(row => ({
+        ...row,
+        price: parseFloat(row.price),
+        compare_price: row.compare_price ? parseFloat(row.compare_price) : null,
+        images: Array.isArray(row.images) ? row.images : [],
+        category: row.category_name ? { name: row.category_name, slug: row.category_slug } : undefined,
+      }));
+    } catch (err) {
+      console.error('[getCachedFeaturedProducts error]:', err);
+      return [];
+    }
   },
   ['featured-products'],
   { revalidate: 60, tags: ['products'] }
@@ -39,15 +44,20 @@ export const getCachedFeaturedProducts = unstable_cache(
 
 export const getCachedCategories = unstable_cache(
   async () => {
-    const res = await query(
-      `SELECT c.id, c.name, c.slug, c.description, c.image_url, c.parent_id,
-              c.sort_order, c.is_active, c.created_at,
-              (SELECT COUNT(*)::int FROM products WHERE category_id = c.id AND is_active = true) as product_count
-       FROM categories c
-       WHERE c.is_active = true
-       ORDER BY c.sort_order ASC`
-    );
-    return res.rows;
+    try {
+      const res = await query(
+        `SELECT c.id, c.name, c.slug, c.description, c.image_url, c.parent_id,
+                c.sort_order, c.is_active, c.created_at,
+                (SELECT COUNT(*)::int FROM products WHERE category_id = c.id AND is_active = true) as product_count
+         FROM categories c
+         WHERE c.is_active = true
+         ORDER BY c.sort_order ASC`
+      );
+      return res.rows;
+    } catch (err) {
+      console.error('[getCachedCategories error]:', err);
+      return [];
+    }
   },
   ['all-categories'],
   { revalidate: 300, tags: ['categories'] }

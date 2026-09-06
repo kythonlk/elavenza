@@ -8,13 +8,13 @@ declare global {
 }
 
 const poolConfig = {
-  connectionString: process.env.NEON_DATABASE_URL || process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
-  max: process.env.NODE_ENV === 'production' ? 20 : 10,
-  min: 2,                         // keep 2 connections warm
+  max: process.env.NODE_ENV === 'production' ? 10 : 5,
+  min: 0,                         // Do not keep idle connections warm in serverless
   idleTimeoutMillis: 10000,       // release idle connections faster (Neon serverless)
   connectionTimeoutMillis: 5000,  // fail fast
-  allowExitOnIdle: false,
+  allowExitOnIdle: true,
 };
 
 if (process.env.NODE_ENV === 'production') {
