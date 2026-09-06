@@ -29,6 +29,13 @@ export default function ProductDetailClient({ product, reviews }: Props) {
   );
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [selectedImgIndex, setSelectedImgIndex] = useState(0);
+
+  const images: string[] = Array.isArray(product.images) && product.images.length > 0
+    ? product.images.filter((img: string) => typeof img === 'string' && img.startsWith('/'))
+    : ['/images/prod-lavender.jpg'];
+
+  const activeImage = images[selectedImgIndex] || images[0] || '/images/prod-lavender.jpg';
 
   const currentPrice = () => {
     if (selectedVariant && product.variants) {
@@ -47,17 +54,12 @@ export default function ProductDetailClient({ product, reviews }: Props) {
       variant_name: variant?.name,
       price: currentPrice(),
       quantity,
-      image: product.images?.[0] || '/images/prod-lavender.jpg',
+      image: activeImage,
       slug: product.slug,
     });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
   };
-
-  const imageSrc =
-    product.images?.length > 0 && product.images[0].startsWith('/')
-      ? product.images[0]
-      : '/images/prod-lavender.jpg';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
@@ -80,23 +82,53 @@ export default function ProductDetailClient({ product, reviews }: Props) {
 
       {/* Main Layout */}
       <div className="grid lg:grid-cols-12 gap-10 lg:gap-14">
-        {/* Image */}
-        <div className="lg:col-span-6">
+        {/* Images Column */}
+        <div className="lg:col-span-6 space-y-4">
           <div className="relative aspect-square rounded-3xl overflow-hidden bg-bg-alt border border-border shadow-md">
             <Image
-              src={imageSrc}
+              src={activeImage}
               alt={product.name}
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover object-center"
+              className="object-cover object-center transition-all duration-500"
             />
             {product.featured && (
               <div className="absolute top-4 left-4 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
                 Bestseller
               </div>
             )}
+            <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-full">
+              {selectedImgIndex === 0 ? 'Apothecary View' : 'Label & Detail Design'}
+            </div>
           </div>
+
+          {/* Thumbnails */}
+          {images.length > 1 && (
+            <div className="flex gap-3">
+              {images.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedImgIndex(idx)}
+                  className={`relative w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all shrink-0 bg-surface shadow-xs ${
+                    selectedImgIndex === idx
+                      ? 'border-primary ring-2 ring-primary/20 scale-95'
+                      : 'border-border hover:border-primary/50 opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <Image
+                    src={img}
+                    alt={`${product.name} thumbnail ${idx + 1}`}
+                    fill
+                    className="object-cover object-center"
+                  />
+                  <div className="absolute bottom-0 inset-x-0 bg-black/40 text-white text-[9px] text-center py-0.5 font-medium">
+                    {idx === 0 ? 'Primary' : 'Details'}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Details */}
@@ -214,17 +246,21 @@ export default function ProductDetailClient({ product, reviews }: Props) {
             {/* Quality Badges */}
             <div className="mt-8 grid grid-cols-2 gap-3 pt-6 border-t border-border">
               {[
-                { Icon: Truck, text: 'Free AU shipping over $75' },
-                { Icon: Leaf, text: '100% Pure & GC/MS Tested' },
-                { Icon: ShieldCheck, text: 'Therapeutic Grade Botanicals' },
-                { Icon: RotateCcw, text: '30-Day Happiness Guarantee' },
-              ].map(({ Icon, text }) => (
-                <div key={text} className="flex items-center gap-2.5 text-xs text-text-muted">
-                  <div className="w-7 h-7 rounded-lg bg-secondary-soft text-secondary flex items-center justify-center shrink-0">
+                { Icon: Truck, text: 'Free AU shipping over $75', href: '/shipping' },
+                { Icon: Leaf, text: '100% Pure & GC/MS Tested', href: '/certifications' },
+                { Icon: ShieldCheck, text: 'Therapeutic Grade Botanicals', href: '/certifications' },
+                { Icon: RotateCcw, text: '30-Day Pure Serenity Guarantee', href: '/returns' },
+              ].map(({ Icon, text, href }) => (
+                <Link
+                  key={text}
+                  href={href}
+                  className="flex items-center gap-2.5 text-xs text-text-muted hover:text-primary transition-colors p-1.5 rounded-xl hover:bg-bg-alt/50 group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-secondary-soft text-secondary group-hover:bg-primary/10 group-hover:text-primary flex items-center justify-center shrink-0 transition-colors">
                     <Icon className="w-3.5 h-3.5" />
                   </div>
-                  <span>{text}</span>
-                </div>
+                  <span className="font-medium underline-offset-2 group-hover:underline">{text}</span>
+                </Link>
               ))}
             </div>
           </div>

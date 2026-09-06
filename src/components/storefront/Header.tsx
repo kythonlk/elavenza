@@ -13,7 +13,8 @@ import {
   Sparkles, 
   HeartHandshake, 
   Feather,
-  Info
+  Info,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function Header() {
@@ -27,6 +28,7 @@ export default function Header() {
     { label: 'Carrier Oils', href: '/products?category=carrier-oils', icon: Feather },
     { label: 'Skincare', href: '/products?category=skincare', icon: Sparkles },
     { label: 'Wellbeing', href: '/products?category=wellbeing', icon: HeartHandshake },
+    { label: 'Certifications', href: '/certifications', icon: ShieldCheck },
     { label: 'Our Story', href: '/about', icon: Info },
   ];
 
@@ -41,12 +43,15 @@ export default function Header() {
     <header className="sticky top-0 z-50">
       {/* Announcement Bar */}
       <div className="bg-primary text-white text-center py-2 px-4 text-xs md:text-sm font-medium tracking-wide flex items-center justify-center gap-2">
-        <span className="hidden sm:inline">🌿 Free Australia-wide express shipping on orders over $75</span>
-        <span className="hidden sm:inline text-white/40">·</span>
-        <span className="inline-flex items-center gap-1 bg-secondary/80 text-white px-2.5 py-0.5 rounded-full text-[11px] font-semibold">
+        <Link href="/shipping" className="hover:underline flex items-center gap-1.5">
+          <span className="hidden sm:inline">🌿 Free Australia-wide express shipping on orders over $75</span>
+          <span className="sm:hidden">🌿 Free Express AU shipping over $75</span>
+        </Link>
+        <span className="text-white/40">·</span>
+        <Link href="/certifications" className="inline-flex items-center gap-1 bg-secondary/80 text-white px-2.5 py-0.5 rounded-full text-[11px] font-semibold hover:bg-secondary transition-colors">
           <Sparkles className="w-3 h-3 text-secondary-light" />
-          100% Pure Botanicals
-        </span>
+          <span>GC/MS Lab Verified</span>
+        </Link>
       </div>
 
       {/* Main Header */}
@@ -176,9 +181,23 @@ export default function Header() {
             })}
             <hr className="my-3 border-border" />
             <Link
+              href="/shipping"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-text-muted hover:text-primary"
+            >
+              <span>Shipping &amp; Delivery Guide</span>
+            </Link>
+            <Link
+              href="/returns"
+              onClick={() => setMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-text-muted hover:text-primary"
+            >
+              <span>30-Day Pure Serenity Guarantee</span>
+            </Link>
+            <Link
               href="/account"
               onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-text-muted hover:text-primary"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-text-muted hover:text-primary"
             >
               <UserIcon className="w-5 h-5 text-text-muted" />
               <span>Customer Account / Sign In</span>

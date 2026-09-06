@@ -16,20 +16,20 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
-              { icon: Leaf, title: '100% Pure Botanicals', desc: 'Ethically sourced, GC/MS tested' },
-              { icon: MapPin, title: 'Australian Made', desc: 'Bottled in Melbourne, VIC' },
-              { icon: Truck, title: 'Free AU Shipping', desc: 'On all orders over $75' },
-              { icon: ShieldCheck, title: 'Therapeutic Grade', desc: 'Zero synthetics or fillers' },
+              { icon: Leaf, title: '100% Pure Botanicals', desc: 'Ethically sourced, GC/MS tested', href: '/certifications' },
+              { icon: MapPin, title: 'Australian Made', desc: 'Bottled in Melbourne, VIC', href: '/about' },
+              { icon: Truck, title: 'Free AU Shipping', desc: 'On all orders over $75', href: '/shipping' },
+              { icon: ShieldCheck, title: 'Therapeutic Grade', desc: '30-Day Pure Serenity Guarantee', href: '/returns' },
             ].map(badge => {
               const Icon = badge.icon;
               return (
-                <div key={badge.title} className="group flex flex-col items-center">
+                <Link key={badge.title} href={badge.href} className="group flex flex-col items-center">
                   <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white text-secondary-light transition-all duration-300">
                     <Icon className="w-6 h-6" />
                   </div>
-                  <h4 className="font-heading font-semibold text-white text-sm">{badge.title}</h4>
+                  <h4 className="font-heading font-semibold text-white text-sm group-hover:text-accent transition-colors">{badge.title}</h4>
                   <p className="text-white/60 text-xs mt-1">{badge.desc}</p>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -113,9 +113,9 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {[
                 { label: 'About Our Story', href: '/about' },
-                { label: 'Shipping & Delivery', href: '/about' },
-                { label: 'Quality & Testing (GC/MS)', href: '/about' },
-                { label: 'FAQs & Care Guide', href: '/about' },
+                { label: 'Shipping & Delivery', href: '/shipping' },
+                { label: '30-Day Pure Serenity Guarantee', href: '/returns' },
+                { label: 'Certifications & GC/MS Testing', href: '/certifications' },
                 { label: 'Admin Portal', href: '/admin' },
               ].map(link => (
                 <li key={link.label}>
