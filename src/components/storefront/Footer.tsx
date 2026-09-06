@@ -10,7 +10,7 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="bg-secondary text-white/90">
+    <footer className="bg-[#241F2E] text-white/90">
       {/* Trust Badges */}
       <div className="border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -24,7 +24,7 @@ export default function Footer() {
               const Icon = badge.icon;
               return (
                 <div key={badge.title} className="group flex flex-col items-center">
-                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-accent group-hover:text-secondary text-accent transition-all duration-300">
+                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-secondary group-hover:text-white text-secondary-light transition-all duration-300">
                     <Icon className="w-6 h-6" />
                   </div>
                   <h4 className="font-heading font-semibold text-white text-sm">{badge.title}</h4>
@@ -55,7 +55,7 @@ export default function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-accent hover:text-secondary text-white transition-all duration-200"
+                className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-secondary text-white transition-all duration-200"
                 aria-label="Instagram"
               >
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -66,7 +66,7 @@ export default function Footer() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-accent hover:text-secondary text-white transition-all duration-200"
+                className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-secondary text-white transition-all duration-200"
                 aria-label="Facebook"
               >
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@ export default function Footer() {
                 href="https://youtube.com"
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-accent hover:text-secondary text-white transition-all duration-200"
+                className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center hover:bg-secondary text-white transition-all duration-200"
                 aria-label="YouTube"
               >
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">

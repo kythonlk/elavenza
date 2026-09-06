@@ -107,7 +107,7 @@ export default function HeroBannerCarousel() {
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-heading font-bold leading-[1.12] tracking-tight" style={{ color: 'var(--color-text)' }}>
                 {slide.headline}{' '}
-                <span className="italic" style={{ color: 'var(--color-primary)' }}>{slide.headlineAccent}</span>
+                <span className="italic" style={{ color: slide.accentColor }}>{slide.headlineAccent}</span>
               </h1>
 
               <p className="mt-5 text-base sm:text-lg leading-relaxed max-w-xl" style={{ color: 'var(--color-text-muted)' }}>

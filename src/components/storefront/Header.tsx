@@ -41,8 +41,12 @@ export default function Header() {
     <header className="sticky top-0 z-50">
       {/* Announcement Bar */}
       <div className="bg-primary text-white text-center py-2 px-4 text-xs md:text-sm font-medium tracking-wide flex items-center justify-center gap-2">
-        <span className="hidden sm:inline">🌿 Free Australia-wide express shipping on orders over $75 | </span>
-        <span>100% Pure Therapeutic Grade Botanicals</span>
+        <span className="hidden sm:inline">🌿 Free Australia-wide express shipping on orders over $75</span>
+        <span className="hidden sm:inline text-white/40">·</span>
+        <span className="inline-flex items-center gap-1 bg-secondary/80 text-white px-2.5 py-0.5 rounded-full text-[11px] font-semibold">
+          <Sparkles className="w-3 h-3 text-secondary-light" />
+          100% Pure Botanicals
+        </span>
       </div>
 
       {/* Main Header */}

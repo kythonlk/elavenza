@@ -67,7 +67,7 @@ export default function ProductCard({ product }: { product: Product }) {
             </span>
           )}
           {product.featured && !product.compare_price && (
-            <span className="bg-accent/95 backdrop-blur-xs text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs uppercase tracking-wider">
+            <span className="bg-secondary text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs uppercase tracking-wider">
               BESTSELLER
             </span>
           )}
@@ -101,7 +101,7 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* Product Details */}
       <div className="p-4 flex flex-col flex-1 justify-between">
         <div>
-          <span className="text-[11px] font-semibold text-accent uppercase tracking-wider block mb-1">
+          <span className="text-[11px] font-semibold text-secondary uppercase tracking-wider block mb-1">
             {product.category?.name || 'Pure Essential Oil'}
           </span>
           <Link href={`/products/${product.slug}`}>

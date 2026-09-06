@@ -92,7 +92,7 @@ export default function ProductDetailClient({ product, reviews }: Props) {
               className="object-cover object-center"
             />
             {product.featured && (
-              <div className="absolute top-4 left-4 bg-accent text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+              <div className="absolute top-4 left-4 bg-secondary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
                 Bestseller
               </div>
             )}
@@ -102,7 +102,7 @@ export default function ProductDetailClient({ product, reviews }: Props) {
         {/* Details */}
         <div className="lg:col-span-6 flex flex-col justify-between">
           <div>
-            <span className="text-xs font-bold text-accent uppercase tracking-widest block mb-1">
+            <span className="text-xs font-bold text-secondary uppercase tracking-widest block mb-1">
               {product.category?.name || 'Therapeutic Botanicals'}
             </span>
             <h1 className="text-3xl sm:text-4xl font-heading font-bold text-text leading-tight">
@@ -220,7 +220,9 @@ export default function ProductDetailClient({ product, reviews }: Props) {
                 { Icon: RotateCcw, text: '30-Day Happiness Guarantee' },
               ].map(({ Icon, text }) => (
                 <div key={text} className="flex items-center gap-2.5 text-xs text-text-muted">
-                  <Icon className="w-4 h-4 text-primary shrink-0" />
+                  <div className="w-7 h-7 rounded-lg bg-secondary-soft text-secondary flex items-center justify-center shrink-0">
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
                   <span>{text}</span>
                 </div>
               ))}
