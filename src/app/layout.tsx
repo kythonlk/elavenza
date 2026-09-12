@@ -43,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+    <html lang="en" className={`${inter.variable} ${outfit.variable}`} data-scroll-behavior="smooth">
       <body className="min-h-screen flex flex-col" style={{ fontFamily: 'var(--font-inter), sans-serif' }}>
         <a className="skip-link" href="#main-content">Skip to content</a>
         <CartProvider><FavouritesProvider>
