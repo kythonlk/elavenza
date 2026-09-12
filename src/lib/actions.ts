@@ -3,7 +3,7 @@
 import { query } from './db';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import Stripe from 'stripe';
 
 const stripeSecret = process.env.API_STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY;
@@ -391,21 +391,26 @@ export async function createCheckoutSessionAction(data: {
 // 5. REVIEWS & NEWSLETTER (Server Actions)
 // ----------------------------------------------------
 export async function submitReviewAction(slug: string, data: { rating: number; title: string; content: string }, token: string) {
-  try {
-    const decoded: any = jwt.verify(token, JWT_SECRET);
-    const prodRes = await query(`SELECT id FROM products WHERE slug = $1`, [slug]);
-    if (prodRes.rows.length === 0) throw new Error('Product not found');
-
-    await query(`
-      INSERT INTO reviews (product_id, user_id, rating, title, content, is_approved)
-      VALUES ($1, $2, $3, $4, $5, true)
-    `, [prodRes.rows[0].id, decoded.user_id, data.rating, data.title, data.content]);
-
-    revalidatePath(`/products/${slug}`);
-    return { success: true, message: 'Review submitted successfully!' };
-  } catch (error: any) {
-    return { success: false, error: error.message };
+  if (!data || !Number.isInteger(data.rating) || data.rating < 1 || data.rating > 5 || typeof data.title !== 'string' || typeof data.content !== 'string' || data.title.trim().length < 3 || data.title.length > 120 || data.content.trim().length < 20 || data.content.length > 2000) {
+    return { success: false, error: 'Please include a rating, a short title and a review of 20–2,000 characters.' };
   }
+  let userId: number;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    if (typeof decoded === 'string' || !Number.isSafeInteger(decoded.user_id)) throw new Error('Invalid session');
+    userId = decoded.user_id;
+  } catch { return { success: false, error: 'Please sign in again before submitting your review.' }; }
+  try {
+    const product = await query<{id:number}>('SELECT id FROM products WHERE slug = $1 AND is_active = true', [slug]);
+    if (!product.rows.length) return {success:false,error:'This product is no longer available.'};
+    const existing = await query('SELECT id FROM reviews WHERE product_id = $1 AND user_id = $2', [product.rows[0].id,userId]);
+    if (existing.rows.length) return {success:false,error:'You have already shared a review for this product. Thank you!'};
+    await query(`INSERT INTO reviews (product_id, user_id, rating, title, content, is_approved) VALUES ($1, $2, $3, $4, $5, true)`,[product.rows[0].id,userId,data.rating,data.title.trim(),data.content.trim()]);
+    updateTag('reviews');
+    updateTag('products');
+    revalidatePath(`/products/${slug}`);
+    return {success:true,message:'Thank you! Your review has been added.'};
+  } catch { return {success:false,error:'We couldn’t save your review just now. Please try again.'}; }
 }
 
 export async function subscribeNewsletterAction(email: string) {

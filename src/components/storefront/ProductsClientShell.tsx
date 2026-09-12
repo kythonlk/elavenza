@@ -1,226 +1,25 @@
-'use client';
-
-import { useState, useTransition, useCallback } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import ProductCard from '@/components/storefront/ProductCard';
-import { getProductsAction } from '@/lib/actions';
-import {
-  Filter,
-  Droplet,
-  Feather,
-  Sparkles,
-  HeartHandshake,
-  SlidersHorizontal,
-  Search,
-} from 'lucide-react';
-
-const categoryIcons: Record<string, React.ElementType> = {
-  'essential-oils': Droplet,
-  'carrier-oils': Feather,
-  skincare: Sparkles,
-  wellbeing: HeartHandshake,
-};
-
-interface Props {
-  initialProducts: any[];
-  initialTotal: number;
-  categories: any[];
-  initialCategory: string;
-  initialSearch: string;
-  initialSort: string;
-  initialOrder: string;
-}
-
-export default function ProductsClientShell({
-  initialProducts,
-  initialTotal,
-  categories,
-  initialCategory,
-  initialSearch,
-  initialSort,
-  initialOrder,
-}: Props) {
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const [products, setProducts] = useState(initialProducts);
-  const [total, setTotal] = useState(initialTotal);
-  const [activeCategory, setActiveCategory] = useState(initialCategory);
-  const [sort, setSort] = useState(initialSort);
-  const [order, setOrder] = useState(initialOrder);
-  const [isPending, startTransition] = useTransition();
-
-  const fetchProducts = useCallback(
-    (cat: string, s: string, o: string) => {
-      startTransition(async () => {
-        const res = await getProductsAction({
-          category: cat,
-          search: initialSearch,
-          sort: s,
-          order: o,
-          limit: 20,
-          offset: 0,
-        });
-        if (res.success) {
-          setProducts(res.products || []);
-          setTotal(res.total || 0);
-        }
-      });
-
-      // Also update URL for SEO & back-button correctness
-      const qs = new URLSearchParams();
-      if (cat) qs.set('category', cat);
-      if (initialSearch) qs.set('search', initialSearch);
-      router.replace(`${pathname}?${qs.toString()}`, { scroll: false });
-    },
-    [initialSearch, pathname, router]
-  );
-
-  const handleCategory = (cat: string) => {
-    setActiveCategory(cat);
-    fetchProducts(cat, sort, order);
-  };
-
-  const handleSort = (val: string) => {
-    const [s, o] = val.split('-');
-    setSort(s);
-    setOrder(o);
-    fetchProducts(activeCategory, s, o);
-  };
-
-  const activeCategoryObj = categories.find(c => c.slug === activeCategory);
-
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-      {/* Page Title */}
-      <div className="mb-10">
-        <span className="text-xs font-bold text-accent uppercase tracking-widest block mb-1">
-          {initialSearch ? 'Search Results' : 'Elavenza Botanical Store'}
-        </span>
-        <h1 className="text-3xl md:text-5xl font-heading font-bold text-text">
-          {initialSearch
-            ? `Results for "${initialSearch}"`
-            : activeCategoryObj
-            ? activeCategoryObj.name
-            : 'All Botanical Products'}
-        </h1>
-        {activeCategoryObj?.description && (
-          <p className="text-text-muted mt-2 text-sm sm:text-base max-w-2xl">
-            {activeCategoryObj.description}
-          </p>
-        )}
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Sidebar */}
-        <aside className="w-full lg:w-64 shrink-0">
-          <div className="bg-surface rounded-2xl border border-border p-5 sticky top-28 shadow-xs">
-            <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border text-text font-heading font-bold text-sm">
-              <Filter className="w-4 h-4 text-primary" />
-              <span>Core Categories</span>
-            </div>
-            <ul className="space-y-1.5">
-              <li>
-                <button
-                  onClick={() => handleCategory('')}
-                  className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
-                    !activeCategory
-                      ? 'bg-primary text-white shadow-xs'
-                      : 'text-text-muted hover:bg-bg-alt hover:text-text'
-                  }`}
-                >
-                  <span>All Products</span>
-                  <span className="text-xs opacity-70">({total})</span>
-                </button>
-              </li>
-              {categories.map(cat => {
-                const Icon = categoryIcons[cat.slug] || Droplet;
-                const isSelected = activeCategory === cat.slug;
-                return (
-                  <li key={cat.id}>
-                    <button
-                      onClick={() => handleCategory(cat.slug)}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-between ${
-                        isSelected
-                          ? 'bg-primary text-white shadow-xs'
-                          : 'text-text-muted hover:bg-bg-alt hover:text-text'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-primary'}`} />
-                        <span>{cat.name}</span>
-                      </div>
-                      <span className="text-xs opacity-70">({cat.product_count})</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </aside>
-
-        {/* Product Grid */}
-        <div className="flex-1">
-          {/* Sort Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-surface rounded-2xl border border-border px-5 py-3.5 shadow-xs">
-            <span className="text-xs sm:text-sm font-medium text-text-muted">
-              Showing <strong>{products.length}</strong> of <strong>{total}</strong> products
-            </span>
-            <div className="flex items-center gap-2.5">
-              <SlidersHorizontal className="w-4 h-4 text-text-muted" />
-              <label htmlFor="sort-select" className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-                Sort:
-              </label>
-              <select
-                id="sort-select"
-                value={`${sort}-${order}`}
-                onChange={e => handleSort(e.target.value)}
-                className="bg-bg-alt border border-border rounded-xl px-3.5 py-1.5 text-xs font-medium text-text focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
-                <option value="created_at-desc">Newest Arrivals</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="name-asc">Alphabetical (A-Z)</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Grid */}
-          {isPending ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {Array(6).fill(null).map((_, i) => (
-                <div key={i} className="bg-surface rounded-2xl border border-border p-4 animate-pulse">
-                  <div className="aspect-square bg-bg-alt rounded-xl mb-4" />
-                  <div className="h-4 bg-bg-alt rounded w-3/4 mb-2" />
-                  <div className="h-4 bg-bg-alt rounded w-1/3" />
-                </div>
-              ))}
-            </div>
-          ) : products.length === 0 ? (
-            <div className="text-center py-24 bg-surface rounded-3xl border border-border p-8">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
-                <Search className="w-8 h-8" />
-              </div>
-              <h3 className="text-lg font-heading font-bold text-text">No products found</h3>
-              <p className="text-text-muted text-sm mt-1 max-w-sm mx-auto">
-                Try selecting another category or resetting search filters.
-              </p>
-              <button
-                onClick={() => handleCategory('')}
-                className="mt-5 inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-primary-dark transition-colors"
-              >
-                View All Products
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {products.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+"use client";
+import {useState,useTransition} from 'react';
+import {useRouter,useSearchParams} from 'next/navigation';
+import Link from 'next/link';
+import {Search,SlidersHorizontal,X,ArrowRight,ChevronLeft,ChevronRight,Heart} from 'lucide-react';
+import ProductCard from './ProductCard';
+import type {Product,CategoryWithCount} from '@/lib/api';
+export default function ProductsClientShell({products,total,categories,page}:{products:Product[];total:number;categories:CategoryWithCount[];page:number}){
+ const router=useRouter();const params=useSearchParams();const [pending,startTransition]=useTransition();const [mobile,setMobile]=useState(false);
+ const category=params.get('category')||'';const active=categories.find(c=>c.slug===category);
+ function update(changes:Record<string,string>){const next=new URLSearchParams(params.toString());if(!('page' in changes))next.delete('page');Object.entries(changes).forEach(([key,value])=>value?next.set(key,value):next.delete(key));startTransition(()=>router.push(`/products${next.size?'?'+next.toString():''}`,{scroll:false}));}
+ const chips=[['category',active?.name||category],['search',params.get('search')],['min',params.has('min')?`From $${params.get('min')}`:''],['max',params.has('max')?`Up to $${params.get('max')}`:''],['stock',params.get('stock')==='true'?'In stock':''],['sale',params.get('sale')==='true'?'On offer':''],['rating',params.has('rating')?`${params.get('rating')}+ stars`:'']].filter(([,value])=>value);
+ return <><section className="shop-hero"><div className="wrap"><Link href="/" className="breadcrumb">Home / The botanical shop</Link><p className="eyebrow">YOUR NEXT EVERYDAY FAVOURITE</p><h1 className="shop-title">{active?.name||'A little nature. All yours.'}</h1><p>{active?.description||'Beautiful botanicals for your skin, your space, and the moments in between.'}</p><div className="shop-collection-pills"><button aria-pressed={!category} onClick={()=>update({category:''})}>All botanicals</button>{categories.map(c=><button key={c.id} aria-pressed={category===c.slug} onClick={()=>update({category:c.slug})}>{c.name}</button>)}</div></div></section>
+ <div className="wrap shop-layout"><aside className={`shop-filters ${mobile?'filters-open':''}`}><div className="filter-title"><span><SlidersHorizontal size={17}/> Refine your ritual</span><button onClick={()=>setMobile(false)} className="mobile-filter-close icon-button" aria-label="Close filters"><X size={19}/></button></div><fieldset disabled={pending}>
+ <form key={'search'+params.get('search')} className="shop-search" onSubmit={e=>{e.preventDefault();const form=new FormData(e.currentTarget);update({search:String(form.get('search')||'').trim()})}}><label htmlFor="shop-search" className="filter-label">Find a favourite</label><div><input id="shop-search" name="search" maxLength={150} defaultValue={params.get('search')||''} placeholder="Try lavender…"/><button type="submit" aria-label="Search the shop"><Search size={18}/></button></div></form>
+ <div className="filter-group"><h2>Collection</h2><label><input type="radio" name="category" checked={!category} onChange={()=>update({category:''})}/>All collections</label>{categories.map(c=><label key={c.id}><input type="radio" name="category" checked={category===c.slug} onChange={()=>update({category:c.slug})}/>{c.name}<span>{c.product_count}</span></label>)}</div>
+ <form key={`price-${params.get('min')}-${params.get('max')}`} className="filter-group" onSubmit={e=>{e.preventDefault();const data=new FormData(e.currentTarget);const min=String(data.get('min')||'');const max=String(data.get('max')||'');if(min&&max&&Number(min)>Number(max)){e.currentTarget.querySelector<HTMLInputElement>('[name=max]')?.setCustomValidity('Maximum must be at least the minimum.');e.currentTarget.reportValidity();return}update({min,max})}}><h2>Price range <small>AUD</small></h2><div className="price-inputs"><label>From<input aria-label="Minimum price" type="number" min="0" step="0.01" name="min" defaultValue={params.get('min')||''} placeholder="$0" onInput={e=>{e.currentTarget.form?.querySelector<HTMLInputElement>('[name=max]')?.setCustomValidity('')}}/></label><label>To<input aria-label="Maximum price" type="number" min="0" step="0.01" name="max" defaultValue={params.get('max')||''} placeholder="Any" onInput={e=>e.currentTarget.setCustomValidity('')}/></label></div><button className="text-link" type="submit">Apply price range <ArrowRight size={14}/></button></form>
+ <div className="filter-group"><h2>A few more details</h2><label><input type="checkbox" checked={params.get('stock')==='true'} onChange={e=>update({stock:e.target.checked?'true':''})}/>In stock only</label><label><input type="checkbox" checked={params.get('sale')==='true'} onChange={e=>update({sale:e.target.checked?'true':''})}/>On offer</label></div>
+ <div className="filter-group"><label className="filter-label" htmlFor="rating-filter">Customer rating</label><select id="rating-filter" value={params.get('rating')||''} onChange={e=>update({rating:e.target.value})}><option value="">All ratings</option><option value="4">4 stars & above</option><option value="3">3 stars & above</option><option value="5">5 stars</option></select></div>
+ <button className="text-link" onClick={()=>startTransition(()=>router.push('/products',{scroll:false}))}>Reset all filters</button></fieldset><Link href="/ritual-finder" className="filter-promo"><span className="eyebrow">NOT SURE WHERE TO BEGIN?</span><h3>There’s a ritual for you.</h3><span>Find your match ↗</span></Link></aside>
+ <section className="shop-results" aria-label="Products" aria-busy={pending}><div className="shop-toolbar"><button className="mobile-filter-button" onClick={()=>setMobile(!mobile)} aria-expanded={mobile}><SlidersHorizontal size={16}/> Filters {chips.length>0&&`(${chips.length})`}</button><p role="status">{pending?'Finding your favourites…':`${total} ${total===1?'botanical':'botanicals'} to discover`}</p><label>Sort by<select disabled={pending} aria-label="Sort products" value={`${params.get('sort')||'created_at'}-${params.get('order')||'desc'}`} onChange={e=>{const [sort,order]=e.target.value.split('-');update({sort,order})}}><option value="created_at-desc">Newest arrivals</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="name-asc">Name: A–Z</option><option value="name-desc">Name: Z–A</option></select></label></div>
+ {chips.length>0&&<div className="filter-chips">{chips.map(([key,label])=><button key={key} disabled={pending} onClick={()=>update({[key as string]:''})} aria-label={`Remove ${label} filter`}>{label}<X size={13}/></button>)}</div>}
+ {products.length?<><div className={`shop-product-grid ${pending?'is-pending':''}`}>{products.map(p=><ProductCard key={p.id} product={p}/>)}</div><div className="shop-pagination"><button disabled={page===1||pending} onClick={()=>update({page:String(page-1)})}><ChevronLeft size={16}/> Previous</button><span>Page {page} of {Math.max(page,Math.ceil(total/12))}</span><button disabled={page*12>=total||pending} onClick={()=>update({page:String(page+1)})}>Next <ChevronRight size={16}/></button></div></>:<div className="wishlist-empty"><Search size={32}/><h2>A fresh start?</h2><p>No botanicals match this selection. Try a wider price range or clear your filters.</p><button className="button" onClick={()=>startTransition(()=>router.push('/products'))}>Explore all botanicals →</button></div>}
+ <div className="save-reminder"><Heart size={22}/><div><h3>Love it? Keep it close.</h3><p>Tap a heart to save your favourites for another day.</p></div><Link href="/favourites" className="text-link">Your favourites <ArrowRight size={15}/></Link></div></section></div></>;
 }

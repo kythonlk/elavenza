@@ -71,6 +71,11 @@ export const getCachedProducts = unstable_cache(
     order?: string;
     limit?: number;
     offset?: number;
+    minPrice?: number;
+    maxPrice?: number;
+    inStock?: boolean;
+    onSale?: boolean;
+    minRating?: number;
   }) => {
     const { category = '', search = '', sort = 'created_at', order = 'desc', limit = 20, offset = 0 } = params;
     const allowedSorts = ['price', 'name', 'created_at'];
@@ -93,6 +98,12 @@ export const getCachedProducts = unstable_cache(
       argIdx++;
     }
 
+    if (params.minPrice !== undefined && Number.isFinite(params.minPrice)) {where += ` AND p.price >= $${argIdx++}`;args.push(params.minPrice);}
+    if (params.maxPrice !== undefined && Number.isFinite(params.maxPrice)) {where += ` AND p.price <= $${argIdx++}`;args.push(params.maxPrice);}
+    if (params.inStock) where += ' AND p.stock > 0';
+    if (params.onSale) where += ' AND p.compare_price > p.price';
+    if (params.minRating) {where += ` AND r.avg_rating >= $${argIdx++} AND r.review_count > 0`;args.push(params.minRating);}
+
     // Single query with COUNT via window function — no second round trip
     const sql = `
       SELECT p.id, p.name, p.slug, p.short_desc, p.price, p.compare_price,
@@ -109,7 +120,7 @@ export const getCachedProducts = unstable_cache(
         FROM reviews WHERE is_approved = true GROUP BY product_id
       ) r ON p.id = r.product_id
       ${where}
-      ORDER BY p.${safeSort} ${safeOrder}
+      ORDER BY p.${safeSort} ${safeOrder}, p.id ASC
       LIMIT $${argIdx} OFFSET $${argIdx + 1}`;
     args.push(limit, offset);
 

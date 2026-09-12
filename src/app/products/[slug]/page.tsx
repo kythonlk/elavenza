@@ -1,6 +1,6 @@
 // ✅ SERVER COMPONENT — SSR with dynamic metadata, ISR revalidation
 import { notFound } from 'next/navigation';
-import { getCachedProductBySlug, getCachedProductReviews } from '@/lib/cache';
+import { getCachedProductBySlug, getCachedProductReviews, getCachedProducts } from '@/lib/cache';
 import ProductDetailClient from '@/components/storefront/ProductDetailClient';
 import type { Metadata } from 'next';
 
@@ -48,5 +48,6 @@ export default async function ProductDetailPage({
 
   if (!product) notFound();
 
-  return <ProductDetailClient product={product} reviews={reviews} />;
+  const related = await getCachedProducts({category:product.category?.slug,limit:5});
+  return <ProductDetailClient key={product.id} product={product} reviews={reviews} related={related.products.filter(p=>p.id!==product.id).slice(0,4)} />;
 }
