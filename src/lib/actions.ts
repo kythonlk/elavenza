@@ -364,6 +364,8 @@ export async function createCheckoutSessionAction(data: {
 
     if (stripe) {
       const session = await stripe.checkout.sessions.create({
+        // Stripe Checkout securely handles supported card brands and any
+        // card-linked wallets available to the customer.
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
