@@ -77,6 +77,7 @@ export const getCachedProducts = unstable_cache(
     onSale?: boolean;
     minRating?: number;
   }) => {
+    try {
     const { category = '', search = '', sort = 'created_at', order = 'desc', limit = 20, offset = 0 } = params;
     const allowedSorts = ['price', 'name', 'created_at'];
     const safeSort = allowedSorts.includes(sort) ? sort : 'created_at';
@@ -135,7 +136,11 @@ export const getCachedProducts = unstable_cache(
       category: row.category_name ? { name: row.category_name, slug: row.category_slug } : undefined,
     }));
 
-    return { products, total };
+      return { products, total };
+    } catch (error) {
+      console.error('[getCachedProducts error]:', error);
+      return { products: [], total: 0 };
+    }
   },
   ['products-list'],
   { revalidate: 60, tags: ['products'] }
