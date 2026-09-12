@@ -1,0 +1,3 @@
+"use client";
+import {useState} from 'react';
+export default function ShippingEstimator(){const [value,setValue]=useState('');const n=Number(value);return <div className="estimator"><h2>Plan your delivery.</h2><label htmlFor="order-value">Your product subtotal (AUD)</label><input id="order-value" type="number" min="0" step="0.01" value={value} onChange={e=>setValue(e.target.value)} placeholder="e.g. 50.00"/><p aria-live="polite">{value!==''&&Number.isFinite(n)&&n>=0?(n>=75?'Your order qualifies for free standard shipping.':`Standard shipping: $9.95. Add $${(75-n).toFixed(2)} to qualify for free shipping.`):'Enter your subtotal to estimate standard shipping.'}</p><small>Shipping estimate only. Your final order total is shown at checkout.</small></div>}

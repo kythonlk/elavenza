@@ -250,6 +250,10 @@ export async function createCheckoutSessionAction(data: {
   email: string;
 }, token?: string) {
   try {
+    if (!stripe) return { success: false, error: 'Payment is temporarily unavailable. Please try again later.' };
+    if (!data.items.length || data.items.some(item => !Number.isSafeInteger(item.quantity) || item.quantity < 1 || item.quantity > 99)) {
+      return { success: false, error: 'Please check your item quantities.' };
+    }
     let subtotal = 0;
     const lineItems: any[] = [];
     const orderItems: any[] = [];
@@ -405,6 +409,8 @@ export async function submitReviewAction(slug: string, data: { rating: number; t
 }
 
 export async function subscribeNewsletterAction(email: string) {
+  if (typeof email !== 'string' || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { success: false, error: 'Enter a valid email address.' };
+  email = email.trim().toLowerCase();
   try {
     await query(`
       INSERT INTO subscribers (email) VALUES ($1) ON CONFLICT (email) DO NOTHING

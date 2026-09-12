@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useReducer, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useReducer, useEffect, ReactNode, useCallback, useRef } from 'react';
 
 export interface CartItem {
   product_id: number;
@@ -104,17 +104,21 @@ const CartContext = createContext<CartContextType | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, { items: [], isOpen: false });
 
+  const hydrated = useRef(false);
   useEffect(() => {
-    const saved = localStorage.getItem('elavenza-cart');
+    let saved: string | null = null;
+    try { saved = localStorage.getItem('elavenza-cart'); } catch {}
     if (saved) {
       try {
-        dispatch({ type: 'LOAD_CART', payload: JSON.parse(saved) });
+        const parsed: unknown = JSON.parse(saved);
+        if (Array.isArray(parsed)) dispatch({ type: 'LOAD_CART', payload: parsed.filter((item): item is CartItem => item && Number.isSafeInteger(item.product_id) && typeof item.name === 'string' && typeof item.slug === 'string' && Number.isFinite(item.price) && item.price >= 0 && Number.isSafeInteger(item.quantity) && item.quantity > 0 && item.quantity <= 99) });
       } catch {}
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('elavenza-cart', JSON.stringify(state.items));
+    if (!hydrated.current) { hydrated.current = true; return; }
+    try { localStorage.setItem('elavenza-cart', JSON.stringify(state.items)); } catch {}
   }, [state.items]);
 
   const subtotal = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);

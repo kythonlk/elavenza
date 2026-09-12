@@ -135,7 +135,7 @@ export default function ProductDetailClient({ product, reviews }: Props) {
         <div className="lg:col-span-6 flex flex-col justify-between">
           <div>
             <span className="text-xs font-bold text-secondary uppercase tracking-widest block mb-1">
-              {product.category?.name || 'Therapeutic Botanicals'}
+              {product.category?.name || 'Botanical Wellness'}
             </span>
             <h1 className="text-3xl sm:text-4xl font-heading font-bold text-text leading-tight">
               {product.name}
@@ -147,12 +147,12 @@ export default function ProductDetailClient({ product, reviews }: Props) {
                 {[1, 2, 3, 4, 5].map(star => (
                   <Star
                     key={star}
-                    className={`w-4 h-4 ${star <= Math.round(product.avg_rating || 5) ? 'fill-accent text-accent' : 'text-border'}`}
+                    className={`w-4 h-4 ${star <= Math.round(product.review_count > 0 ? product.avg_rating : 0) ? 'fill-accent text-accent' : 'text-border'}`}
                   />
                 ))}
               </div>
               <span className="text-xs font-medium text-text-muted">
-                {product.avg_rating || 5.0} ({product.review_count || 12} Verified Customer Reviews)
+                {product.review_count > 0 ? `${product.avg_rating} (${product.review_count} customer reviews)` : 'No reviews yet'}
               </span>
             </div>
 
@@ -247,9 +247,9 @@ export default function ProductDetailClient({ product, reviews }: Props) {
             <div className="mt-8 grid grid-cols-2 gap-3 pt-6 border-t border-border">
               {[
                 { Icon: Truck, text: 'Free AU shipping over $75', href: '/shipping' },
-                { Icon: Leaf, text: '100% Pure & GC/MS Tested', href: '/certifications' },
-                { Icon: ShieldCheck, text: 'Therapeutic Grade Botanicals', href: '/certifications' },
-                { Icon: RotateCcw, text: '30-Day Pure Serenity Guarantee', href: '/returns' },
+                { Icon: Leaf, text: 'Ingredients & quality information', href: '/certifications' },
+                { Icon: ShieldCheck, text: 'Explore our quality standards', href: '/certifications' },
+                { Icon: RotateCcw, text: 'Returns & customer care', href: '/returns' },
               ].map(({ Icon, text, href }) => (
                 <Link
                   key={text}

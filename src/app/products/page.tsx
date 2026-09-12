@@ -5,7 +5,8 @@ import ProductsClientShell from '@/components/storefront/ProductsClientShell';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'All Products | Elavenza',
+  title: 'Shop botanical wellness',
+  alternates: {canonical:'/products'},
   description: 'Browse our full range of pure essential oils, carrier oils, natural skincare, and wellness products. Australian owned.',
 };
 

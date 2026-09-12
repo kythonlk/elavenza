@@ -1,6 +1,6 @@
 // ✅ SERVER COMPONENT — SSR with dynamic metadata, ISR revalidation
 import { notFound } from 'next/navigation';
-import { getCachedProductBySlug, getCachedProductReviews, getCachedProducts } from '@/lib/cache';
+import { getCachedProductBySlug, getCachedProductReviews } from '@/lib/cache';
 import ProductDetailClient from '@/components/storefront/ProductDetailClient';
 import type { Metadata } from 'next';
 
@@ -19,11 +19,12 @@ export async function generateMetadata({
   if (!product) return { title: 'Product Not Found | Elavenza' };
 
   return {
-    title: product.meta_title || `${product.name} | Elavenza`,
+    title: product.meta_title || product.name,
     description:
       product.meta_description ||
       product.short_desc ||
       `Buy ${product.name} from Elavenza — pure botanical quality, Australia-wide delivery.`,
+    alternates: {canonical: `/products/${slug}`},
     openGraph: {
       title: product.name,
       description: product.short_desc,

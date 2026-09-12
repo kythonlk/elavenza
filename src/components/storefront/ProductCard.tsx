@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useCart } from '@/lib/cart';
 import type { Product } from '@/lib/api';
+import FavouriteButton from './FavouriteButton';
 import { Star, ShoppingBag, Check } from 'lucide-react';
 
 function StarRating({ rating, count }: { rating: number; count: number }) {
@@ -29,6 +30,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (product.stock <= 0) return;
     e.stopPropagation();
     addItem({
       product_id: product.id,
@@ -47,7 +49,8 @@ export default function ProductCard({ product }: { product: Product }) {
     : '/images/prod-lavender.jpg';
 
   return (
-    <div className="group bg-surface rounded-2xl border border-border overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300 flex flex-col h-full">
+    <div className="product-tile group relative bg-surface rounded-sm border border-border overflow-hidden hover:shadow-xl hover:border-primary/30 transition-all duration-300 flex flex-col h-full">
+      <div className="card-favourite"><FavouriteButton product={product}/></div>
       {/* Image Container */}
       <Link href={`/products/${product.slug}`} className="block relative overflow-hidden aspect-square bg-bg-alt">
         <Image
@@ -56,7 +59,7 @@ export default function ProductCard({ product }: { product: Product }) {
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-          priority={product.featured}
+          
         />
 
         {/* Badges */}
@@ -73,29 +76,7 @@ export default function ProductCard({ product }: { product: Product }) {
           )}
         </div>
 
-        {/* Quick Add Overlay on Desktop */}
-        <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 hidden sm:block z-10">
-          <button
-            onClick={handleAddToCart}
-            className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium transition-all shadow-md flex items-center justify-center gap-2 ${
-              added 
-                ? 'bg-success text-white' 
-                : 'bg-primary text-white hover:bg-primary-dark'
-            }`}
-          >
-            {added ? (
-              <>
-                <Check className="w-4 h-4" />
-                <span>Added to Bag</span>
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="w-4 h-4" />
-                <span>Quick Add</span>
-              </>
-            )}
-          </button>
-        </div>
+
       </Link>
 
       {/* Product Details */}
@@ -111,7 +92,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </Link>
 
           <div className="mt-1.5">
-            <StarRating rating={product.avg_rating || 5} count={product.review_count || 12} />
+            {product.review_count > 0 ? <StarRating rating={product.avg_rating} count={product.review_count} /> : <span className="text-xs text-text-muted">Discover your new ritual</span>}
           </div>
         </div>
 
@@ -136,15 +117,16 @@ export default function ProductCard({ product }: { product: Product }) {
 
           {/* Mobile Add to Cart Button */}
           <button
+            disabled={product.stock <= 0}
             onClick={handleAddToCart}
-            className={`mt-3 w-full py-2 rounded-xl text-xs font-medium border sm:hidden flex items-center justify-center gap-1.5 transition-colors ${
+            className={`mt-3 w-full py-2 rounded-sm text-xs font-medium border flex items-center justify-center gap-1.5 transition-colors ${
               added 
                 ? 'bg-success text-white border-success' 
                 : 'border-primary text-primary hover:bg-primary hover:text-white'
             }`}
           >
             {added ? <Check className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
-            <span>{added ? 'Added' : 'Add to Bag'}</span>
+            <span>{product.stock <= 0 ? 'Out of stock' : added ? 'Added' : 'Add to Bag'}</span>
           </button>
         </div>
       </div>
