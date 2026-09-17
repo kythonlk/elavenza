@@ -63,21 +63,20 @@ export const getCachedCategories = unstable_cache(
   { revalidate: 300, tags: ['categories'] }
 );
 
-export const getCachedProducts = unstable_cache(
-  async (params: {
-    category?: string;
-    search?: string;
-    sort?: string;
-    order?: string;
-    limit?: number;
-    offset?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    inStock?: boolean;
-    onSale?: boolean;
-    minRating?: number;
-  }) => {
-    try {
+async function fetchProductsRaw(params: {
+  category?: string;
+  search?: string;
+  sort?: string;
+  order?: string;
+  limit?: number;
+  offset?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  onSale?: boolean;
+  minRating?: number;
+}) {
+  try {
     const { category = '', search = '', sort = 'created_at', order = 'desc', limit = 20, offset = 0 } = params;
     const allowedSorts = ['price', 'name', 'created_at'];
     const safeSort = allowedSorts.includes(sort) ? sort : 'created_at';
@@ -88,13 +87,19 @@ export const getCachedProducts = unstable_cache(
     let where = 'WHERE p.is_active = true';
 
     if (category) {
-      where += ` AND c.slug = $${argIdx}`;
-      args.push(category);
-      argIdx++;
+      if (category === 'essential-oils') {
+        where += ` AND c.slug IN ('organic-essential-oils', 'pure-essential-oils')`;
+      } else if (category === 'carrier-oils') {
+        where += ` AND c.slug IN ('organic-carrier-oils', 'pure-carrier-oils')`;
+      } else {
+        where += ` AND c.slug = $${argIdx}`;
+        args.push(category);
+        argIdx++;
+      }
     }
 
     if (search) {
-      where += ` AND (p.name ILIKE $${argIdx} OR p.description ILIKE $${argIdx})`;
+      where += ` AND (p.name ILIKE $${argIdx} OR p.description ILIKE $${argIdx} OR p.short_desc ILIKE $${argIdx})`;
       args.push(`%${search}%`);
       argIdx++;
     }
@@ -105,7 +110,6 @@ export const getCachedProducts = unstable_cache(
     if (params.onSale) where += ' AND p.compare_price > p.price';
     if (params.minRating) {where += ` AND r.avg_rating >= $${argIdx++} AND r.review_count > 0`;args.push(params.minRating);}
 
-    // Single query with COUNT via window function — no second round trip
     const sql = `
       SELECT p.id, p.name, p.slug, p.short_desc, p.price, p.compare_price,
              p.sku, p.stock, p.images, p.featured,
@@ -136,15 +140,43 @@ export const getCachedProducts = unstable_cache(
       category: row.category_name ? { name: row.category_name, slug: row.category_slug } : undefined,
     }));
 
-      return { products, total };
-    } catch (error) {
-      console.error('[getCachedProducts error]:', error);
-      return { products: [], total: 0 };
-    }
-  },
-  ['products-list'],
-  { revalidate: 60, tags: ['products'] }
-);
+    return { products, total };
+  } catch (error) {
+    console.error('[fetchProductsRaw error]:', error);
+    return { products: [], total: 0 };
+  }
+}
+
+export async function getCachedProducts(params: {
+  category?: string;
+  search?: string;
+  sort?: string;
+  order?: string;
+  limit?: number;
+  offset?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  onSale?: boolean;
+  minRating?: number;
+}) {
+  // Live search queries must not be cached with static key
+  if (params.search && params.search.trim()) {
+    return fetchProductsRaw(params);
+  }
+
+  const category = params.category || 'all';
+  const sort = params.sort || 'created_at';
+  const order = params.order || 'desc';
+  const limit = params.limit || 20;
+  const offset = params.offset || 0;
+
+  return unstable_cache(
+    () => fetchProductsRaw(params),
+    ['products-list', category, sort, order, String(limit), String(offset)],
+    { revalidate: 60, tags: ['products'] }
+  )();
+}
 
 export const getCachedProductBySlug = unstable_cache(
   async (slug: string) => {

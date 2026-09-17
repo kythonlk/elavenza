@@ -1,25 +1,416 @@
 "use client";
-import {useState,useTransition} from 'react';
-import {useRouter,useSearchParams} from 'next/navigation';
-import Link from 'next/link';
-import {Search,SlidersHorizontal,X,ArrowRight,ChevronLeft,ChevronRight,Heart} from 'lucide-react';
-import ProductCard from './ProductCard';
-import type {Product,CategoryWithCount} from '@/lib/api';
-export default function ProductsClientShell({products,total,categories,page}:{products:Product[];total:number;categories:CategoryWithCount[];page:number}){
- const router=useRouter();const params=useSearchParams();const [pending,startTransition]=useTransition();const [mobile,setMobile]=useState(false);
- const category=params.get('category')||'';const active=categories.find(c=>c.slug===category);
- function update(changes:Record<string,string>){const next=new URLSearchParams(params.toString());if(!('page' in changes))next.delete('page');Object.entries(changes).forEach(([key,value])=>value?next.set(key,value):next.delete(key));startTransition(()=>router.push(`/products${next.size?'?'+next.toString():''}`,{scroll:false}));}
- const chips=[['category',active?.name||category],['search',params.get('search')],['min',params.has('min')?`From $${params.get('min')}`:''],['max',params.has('max')?`Up to $${params.get('max')}`:''],['stock',params.get('stock')==='true'?'In stock':''],['sale',params.get('sale')==='true'?'On offer':''],['rating',params.has('rating')?`${params.get('rating')}+ stars`:'']].filter(([,value])=>value);
- return <><section className="shop-hero"><div className="wrap"><Link href="/" className="breadcrumb">Home / The botanical shop</Link><p className="eyebrow">YOUR NEXT EVERYDAY FAVOURITE</p><h1 className="shop-title">{active?.name||'A little nature. All yours.'}</h1><p>{active?.description||'Beautiful botanicals for your skin, your space, and the moments in between.'}</p><div className="shop-collection-pills"><button aria-pressed={!category} onClick={()=>update({category:''})}>All botanicals</button>{categories.map(c=><button key={c.id} aria-pressed={category===c.slug} onClick={()=>update({category:c.slug})}>{c.name}</button>)}</div></div></section>
- <div className="wrap shop-layout"><aside className={`shop-filters ${mobile?'filters-open':''}`}><div className="filter-title"><span><SlidersHorizontal size={17}/> Refine your ritual</span><button onClick={()=>setMobile(false)} className="mobile-filter-close icon-button" aria-label="Close filters"><X size={19}/></button></div><fieldset disabled={pending}>
- <form key={'search'+params.get('search')} className="shop-search" onSubmit={e=>{e.preventDefault();const form=new FormData(e.currentTarget);update({search:String(form.get('search')||'').trim()})}}><label htmlFor="shop-search" className="filter-label">Find a favourite</label><div><input id="shop-search" name="search" maxLength={150} defaultValue={params.get('search')||''} placeholder="Try lavender…"/><button type="submit" aria-label="Search the shop"><Search size={18}/></button></div></form>
- <div className="filter-group"><h2>Collection</h2><label><input type="radio" name="category" checked={!category} onChange={()=>update({category:''})}/>All collections</label>{categories.map(c=><label key={c.id}><input type="radio" name="category" checked={category===c.slug} onChange={()=>update({category:c.slug})}/>{c.name}<span>{c.product_count}</span></label>)}</div>
- <form key={`price-${params.get('min')}-${params.get('max')}`} className="filter-group" onSubmit={e=>{e.preventDefault();const data=new FormData(e.currentTarget);const min=String(data.get('min')||'');const max=String(data.get('max')||'');if(min&&max&&Number(min)>Number(max)){e.currentTarget.querySelector<HTMLInputElement>('[name=max]')?.setCustomValidity('Maximum must be at least the minimum.');e.currentTarget.reportValidity();return}update({min,max})}}><h2>Price range <small>AUD</small></h2><div className="price-inputs"><label>From<input aria-label="Minimum price" type="number" min="0" step="0.01" name="min" defaultValue={params.get('min')||''} placeholder="$0" onInput={e=>{e.currentTarget.form?.querySelector<HTMLInputElement>('[name=max]')?.setCustomValidity('')}}/></label><label>To<input aria-label="Maximum price" type="number" min="0" step="0.01" name="max" defaultValue={params.get('max')||''} placeholder="Any" onInput={e=>e.currentTarget.setCustomValidity('')}/></label></div><button className="text-link" type="submit">Apply price range <ArrowRight size={14}/></button></form>
- <div className="filter-group"><h2>A few more details</h2><label><input type="checkbox" checked={params.get('stock')==='true'} onChange={e=>update({stock:e.target.checked?'true':''})}/>In stock only</label><label><input type="checkbox" checked={params.get('sale')==='true'} onChange={e=>update({sale:e.target.checked?'true':''})}/>On offer</label></div>
- <div className="filter-group"><label className="filter-label" htmlFor="rating-filter">Customer rating</label><select id="rating-filter" value={params.get('rating')||''} onChange={e=>update({rating:e.target.value})}><option value="">All ratings</option><option value="4">4 stars & above</option><option value="3">3 stars & above</option><option value="5">5 stars</option></select></div>
- <button className="text-link" onClick={()=>startTransition(()=>router.push('/products',{scroll:false}))}>Reset all filters</button></fieldset><Link href="/ritual-finder" className="filter-promo"><span className="eyebrow">NOT SURE WHERE TO BEGIN?</span><h3>There’s a ritual for you.</h3><span>Find your match ↗</span></Link></aside>
- <section className="shop-results" aria-label="Products" aria-busy={pending}><div className="shop-toolbar"><button className="mobile-filter-button" onClick={()=>setMobile(!mobile)} aria-expanded={mobile}><SlidersHorizontal size={16}/> Filters {chips.length>0&&`(${chips.length})`}</button><p role="status">{pending?'Finding your favourites…':`${total} ${total===1?'botanical':'botanicals'} to discover`}</p><label>Sort by<select disabled={pending} aria-label="Sort products" value={`${params.get('sort')||'created_at'}-${params.get('order')||'desc'}`} onChange={e=>{const [sort,order]=e.target.value.split('-');update({sort,order})}}><option value="created_at-desc">Newest arrivals</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="name-asc">Name: A–Z</option><option value="name-desc">Name: Z–A</option></select></label></div>
- {chips.length>0&&<div className="filter-chips">{chips.map(([key,label])=><button key={key} disabled={pending} onClick={()=>update({[key as string]:''})} aria-label={`Remove ${label} filter`}>{label}<X size={13}/></button>)}</div>}
- {products.length?<><div className={`shop-product-grid ${pending?'is-pending':''}`}>{products.map(p=><ProductCard key={p.id} product={p}/>)}</div><div className="shop-pagination"><button disabled={page===1||pending} onClick={()=>update({page:String(page-1)})}><ChevronLeft size={16}/> Previous</button><span>Page {page} of {Math.max(page,Math.ceil(total/12))}</span><button disabled={page*12>=total||pending} onClick={()=>update({page:String(page+1)})}>Next <ChevronRight size={16}/></button></div></>:<div className="wishlist-empty"><Search size={32}/><h2>A fresh start?</h2><p>No botanicals match this selection. Try a wider price range or clear your filters.</p><button className="button" onClick={()=>startTransition(()=>router.push('/products'))}>Explore all botanicals →</button></div>}
- <div className="save-reminder"><Heart size={22}/><div><h3>Love it? Keep it close.</h3><p>Tap a heart to save your favourites for another day.</p></div><Link href="/favourites" className="text-link">Your favourites <ArrowRight size={15}/></Link></div></section></div></>;
+import { useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import {
+    Search,
+    SlidersHorizontal,
+    X,
+    ArrowRight,
+    ChevronLeft,
+    ChevronRight,
+    Heart,
+} from "lucide-react";
+import ProductCard from "./ProductCard";
+import type { Product, CategoryWithCount } from "@/lib/api";
+export default function ProductsClientShell({
+    products,
+    total,
+    categories,
+    page,
+}: {
+    products: Product[];
+    total: number;
+    categories: CategoryWithCount[];
+    page: number;
+}) {
+    const router = useRouter();
+    const params = useSearchParams();
+    const [pending, startTransition] = useTransition();
+    const [mobile, setMobile] = useState(false);
+    const category = params.get("category") || "";
+    const active = categories.find((c) => c.slug === category);
+    function update(changes: Record<string, string>) {
+        const next = new URLSearchParams(params.toString());
+        if (!("page" in changes)) next.delete("page");
+        Object.entries(changes).forEach(([key, value]) =>
+            value ? next.set(key, value) : next.delete(key),
+        );
+        startTransition(() =>
+            router.push(`/products${next.size ? "?" + next.toString() : ""}`, {
+                scroll: false,
+            }),
+        );
+    }
+    const chips = [
+        ["category", active?.name || category],
+        ["search", params.get("search")],
+        ["min", params.has("min") ? `From $${params.get("min")}` : ""],
+        ["max", params.has("max") ? `Up to $${params.get("max")}` : ""],
+        ["stock", params.get("stock") === "true" ? "In stock" : ""],
+        ["sale", params.get("sale") === "true" ? "On offer" : ""],
+        [
+            "rating",
+            params.has("rating") ? `${params.get("rating")}+ stars` : "",
+        ],
+    ].filter(([, value]) => value);
+    return (
+        <>
+            <section className="shop-hero">
+                <div className="wrap">
+                    <Link href="/" className="breadcrumb">
+                        Home / The botanical shop
+                    </Link>
+                    <p className="eyebrow">YOUR NEXT EVERYDAY FAVOURITE</p>
+                    <h1 className="shop-title">
+                        {active?.name || "A little nature. All yours."}
+                    </h1>
+                </div>
+            </section>
+            <div className="wrap shop-layout">
+                <aside
+                    className={`shop-filters ${mobile ? "filters-open" : ""}`}
+                >
+                    <div className="filter-title">
+                        <span>
+                            <SlidersHorizontal size={17} /> Refine your ritual
+                        </span>
+                        <button
+                            onClick={() => setMobile(false)}
+                            className="mobile-filter-close icon-button"
+                            aria-label="Close filters"
+                        >
+                            <X size={19} />
+                        </button>
+                    </div>
+                    <fieldset disabled={pending}>
+                        <form
+                            key={"search" + params.get("search")}
+                            className="shop-search"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                const form = new FormData(e.currentTarget);
+                                update({
+                                    search: String(
+                                        form.get("search") || "",
+                                    ).trim(),
+                                });
+                            }}
+                        >
+                            <label
+                                htmlFor="shop-search"
+                                className="filter-label"
+                            >
+                                Find a favourite
+                            </label>
+                            <div>
+                                <input
+                                    id="shop-search"
+                                    name="search"
+                                    maxLength={150}
+                                    defaultValue={params.get("search") || ""}
+                                    placeholder="Try lavender…"
+                                />
+                                <button
+                                    type="submit"
+                                    aria-label="Search the shop"
+                                >
+                                    <Search size={18} />
+                                </button>
+                            </div>
+                        </form>
+                        <div className="filter-group">
+                            <h2>Collection</h2>
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="category"
+                                    checked={!category}
+                                    onChange={() => update({ category: "" })}
+                                />
+                                All collections
+                            </label>
+                            {categories.map((c) => (
+                                <label key={c.id}>
+                                    <input
+                                        type="radio"
+                                        name="category"
+                                        checked={category === c.slug}
+                                        onChange={() =>
+                                            update({ category: c.slug })
+                                        }
+                                    />
+                                    {c.name}
+                                    <span>{c.product_count}</span>
+                                </label>
+                            ))}
+                        </div>
+                        <form
+                            key={`price-${params.get("min")}-${params.get("max")}`}
+                            className="filter-group"
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                const data = new FormData(e.currentTarget);
+                                const min = String(data.get("min") || "");
+                                const max = String(data.get("max") || "");
+                                if (min && max && Number(min) > Number(max)) {
+                                    e.currentTarget
+                                        .querySelector<HTMLInputElement>(
+                                            "[name=max]",
+                                        )
+                                        ?.setCustomValidity(
+                                            "Maximum must be at least the minimum.",
+                                        );
+                                    e.currentTarget.reportValidity();
+                                    return;
+                                }
+                                update({ min, max });
+                            }}
+                        >
+                            <h2>
+                                Price range <small>AUD</small>
+                            </h2>
+                            <div className="price-inputs">
+                                <label>
+                                    From
+                                    <input
+                                        aria-label="Minimum price"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        name="min"
+                                        defaultValue={params.get("min") || ""}
+                                        placeholder="$0"
+                                        onInput={(e) => {
+                                            e.currentTarget.form
+                                                ?.querySelector<HTMLInputElement>(
+                                                    "[name=max]",
+                                                )
+                                                ?.setCustomValidity("");
+                                        }}
+                                    />
+                                </label>
+                                <label>
+                                    To
+                                    <input
+                                        aria-label="Maximum price"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        name="max"
+                                        defaultValue={params.get("max") || ""}
+                                        placeholder="Any"
+                                        onInput={(e) =>
+                                            e.currentTarget.setCustomValidity(
+                                                "",
+                                            )
+                                        }
+                                    />
+                                </label>
+                            </div>
+                            <button className="text-link" type="submit">
+                                Apply price range <ArrowRight size={14} />
+                            </button>
+                        </form>
+                        <div className="filter-group">
+                            <h2>A few more details</h2>
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={params.get("stock") === "true"}
+                                    onChange={(e) =>
+                                        update({
+                                            stock: e.target.checked
+                                                ? "true"
+                                                : "",
+                                        })
+                                    }
+                                />
+                                In stock only
+                            </label>
+                            <label>
+                                <input
+                                    type="checkbox"
+                                    checked={params.get("sale") === "true"}
+                                    onChange={(e) =>
+                                        update({
+                                            sale: e.target.checked
+                                                ? "true"
+                                                : "",
+                                        })
+                                    }
+                                />
+                                On offer
+                            </label>
+                        </div>
+                        <div className="filter-group">
+                            <label
+                                className="filter-label"
+                                htmlFor="rating-filter"
+                            >
+                                Customer rating
+                            </label>
+                            <select
+                                id="rating-filter"
+                                value={params.get("rating") || ""}
+                                onChange={(e) =>
+                                    update({ rating: e.target.value })
+                                }
+                            >
+                                <option value="">All ratings</option>
+                                <option value="4">4 stars & above</option>
+                                <option value="3">3 stars & above</option>
+                                <option value="5">5 stars</option>
+                            </select>
+                        </div>
+                        <button
+                            className="text-link"
+                            onClick={() =>
+                                startTransition(() =>
+                                    router.push("/products", { scroll: false }),
+                                )
+                            }
+                        >
+                            Reset all filters
+                        </button>
+                    </fieldset>
+                    <Link href="/ritual-finder" className="filter-promo">
+                        <span className="eyebrow">
+                            NOT SURE WHERE TO BEGIN?
+                        </span>
+                        <h3>There’s a ritual for you.</h3>
+                        <span>Find your match ↗</span>
+                    </Link>
+                </aside>
+                <section
+                    className="shop-results"
+                    aria-label="Products"
+                    aria-busy={pending}
+                >
+                    <div className="shop-toolbar">
+                        <button
+                            className="mobile-filter-button"
+                            onClick={() => setMobile(!mobile)}
+                            aria-expanded={mobile}
+                        >
+                            <SlidersHorizontal size={16} /> Filters{" "}
+                            {chips.length > 0 && `(${chips.length})`}
+                        </button>
+                        <p role="status">
+                            {pending
+                                ? "Finding your favourites…"
+                                : `${total} ${total === 1 ? "botanical" : "botanicals"} to discover`}
+                        </p>
+                        <label>
+                            Sort by
+                            <select
+                                disabled={pending}
+                                aria-label="Sort products"
+                                value={`${params.get("sort") || "created_at"}-${params.get("order") || "desc"}`}
+                                onChange={(e) => {
+                                    const [sort, order] =
+                                        e.target.value.split("-");
+                                    update({ sort, order });
+                                }}
+                            >
+                                <option value="created_at-desc">
+                                    Newest arrivals
+                                </option>
+                                <option value="price-asc">
+                                    Price: low to high
+                                </option>
+                                <option value="price-desc">
+                                    Price: high to low
+                                </option>
+                                <option value="name-asc">Name: A–Z</option>
+                                <option value="name-desc">Name: Z–A</option>
+                            </select>
+                        </label>
+                    </div>
+                    {chips.length > 0 && (
+                        <div className="filter-chips">
+                            {chips.map(([key, label]) => (
+                                <button
+                                    key={key}
+                                    disabled={pending}
+                                    onClick={() =>
+                                        update({ [key as string]: "" })
+                                    }
+                                    aria-label={`Remove ${label} filter`}
+                                >
+                                    {label}
+                                    <X size={13} />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                    {products.length ? (
+                        <>
+                            <div
+                                className={`shop-product-grid ${pending ? "is-pending" : ""}`}
+                            >
+                                {products.map((p) => (
+                                    <ProductCard key={p.id} product={p} />
+                                ))}
+                            </div>
+                            <div className="shop-pagination">
+                                <button
+                                    disabled={page === 1 || pending}
+                                    onClick={() =>
+                                        update({ page: String(page - 1) })
+                                    }
+                                >
+                                    <ChevronLeft size={16} /> Previous
+                                </button>
+                                <span>
+                                    Page {page} of{" "}
+                                    {Math.max(page, Math.ceil(total / 12))}
+                                </span>
+                                <button
+                                    disabled={page * 12 >= total || pending}
+                                    onClick={() =>
+                                        update({ page: String(page + 1) })
+                                    }
+                                >
+                                    Next <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="wishlist-empty">
+                            <Search size={32} />
+                            <h2>A fresh start?</h2>
+                            <p>
+                                No botanicals match this selection. Try a wider
+                                price range or clear your filters.
+                            </p>
+                            <button
+                                className="button"
+                                onClick={() =>
+                                    startTransition(() =>
+                                        router.push("/products"),
+                                    )
+                                }
+                            >
+                                Explore all botanicals →
+                            </button>
+                        </div>
+                    )}
+                    <div className="save-reminder">
+                        <Heart size={22} />
+                        <div>
+                            <h3>Love it? Keep it close.</h3>
+                            <p>
+                                Tap a heart to save your favourites for another
+                                day.
+                            </p>
+                        </div>
+                        <Link href="/favourites" className="text-link">
+                            Your favourites <ArrowRight size={15} />
+                        </Link>
+                    </div>
+                </section>
+            </div>
+        </>
+    );
 }
