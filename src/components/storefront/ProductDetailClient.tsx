@@ -358,6 +358,16 @@ export default function ProductDetailClient({
           </div>
 
           <div className="product-promises">
+            <span className="inline-flex items-center gap-2 text-xs font-semibold text-primary">
+              <Image
+                src="/images/australian-made-logo.png"
+                alt="Australian Made"
+                width={20}
+                height={17}
+                className="object-contain inline-block"
+              />
+              Australian Made
+            </span>
             <Link href="/certifications">
               <Leaf size={17} />
               Ingredients &amp; quality
@@ -452,6 +462,10 @@ export default function ProductDetailClient({
                 <div>
                   <dt>Packaging</dt>
                   <dd>Recyclable amber UV glass &amp; dropper</dd>
+                </div>
+                <div>
+                  <dt>Origin &amp; Bottling</dt>
+                  <dd>Australian Made · Brisbane QLD 4051</dd>
                 </div>
                 <div>
                   <dt>Currency</dt>

@@ -634,7 +634,13 @@ DIFFUSER_PRODUCT = {
     "bottle_type": "device"
 }
 
-def generate_dynamic_svg_label(prod, logo_b64):
+def generate_dynamic_svg_label(prod, logo_b64, aus_made_b64=None):
+    if aus_made_b64 is None:
+        try:
+            with open('public/images/australian-made-logo.png', 'rb') as f:
+                aus_made_b64 = base64.b64encode(f.read()).decode('utf-8')
+        except Exception:
+            aus_made_b64 = ""
     slug = prod["slug"]
     name = prod["name"].upper()
     botanical = prod.get("botanical", "Botanical Specimen")
@@ -875,19 +881,19 @@ def generate_dynamic_svg_label(prod, logo_b64):
     </g>
 
     <!-- Australian Made & Authenticity Statement -->
-    <g transform="translate(0, 480)">
-      <rect x="0" y="0" width="265" height="135" rx="6" fill="#F4EFE6" stroke="#DDD4C5" stroke-width="1"/>
-      <g transform="translate(15, 18)">
-        <!-- Australian Kangaroo / Made Symbol outline -->
-        <polygon points="18,0 36,32 0,32" fill="#2C4837"/>
-        <circle cx="18" cy="18" r="5" fill="#E8B44A"/>
-        <text x="48" y="14" class="sans-bold" font-size="11" fill="#2C4837">AUSTRALIAN MADE</text>
-        <text x="48" y="28" class="sans-reg" font-size="9.5" fill="#5E584D">&amp; Bottled with Care</text>
+    <g transform="translate(0, 465)">
+      <rect x="0" y="0" width="265" height="155" rx="6" fill="#F4EFE6" stroke="#DDD4C5" stroke-width="1"/>
+      <g transform="translate(14, 12)">
+        <!-- Australian Made Official Kangaroo Logo -->
+        <image href="data:image/png;base64,{aus_made_b64}" x="0" y="0" width="46" height="40" preserveAspectRatio="xMidYMid meet"/>
+        <text x="54" y="17" class="sans-bold" font-size="11" fill="#2C4837">AUSTRALIAN MADE</text>
+        <text x="54" y="33" class="sans-reg" font-size="9.5" fill="#5E584D">&amp; Bottled with Care</text>
       </g>
-      <line x1="15" y1="58" x2="250" y2="58" stroke="#E3DCD0" stroke-width="1"/>
-      <text x="15" y="80" class="sans-med" font-size="10.5" fill="#3D372E">Elavenza Wellness Pty Ltd</text>
-      <text x="15" y="96" class="sans-reg" font-size="10" fill="#665F52">Melbourne VIC 3000 • Australia</text>
-      <text x="15" y="112" class="sans-bold" font-size="10" fill="#2C4837">www.elavenza.com</text>
+      <line x1="14" y1="58" x2="251" y2="58" stroke="#E3DCD0" stroke-width="1"/>
+      <text x="14" y="78" class="sans-med" font-size="10.5" font-weight="bold" fill="#3D372E">Elavenza Wellness</text>
+      <text x="14" y="95" class="sans-med" font-size="9.5" fill="#5E584D">ABN 48 447 602 072</text>
+      <text x="14" y="112" class="sans-reg" font-size="9.5" fill="#665F52">Brisbane QLD 4051 • Australia</text>
+      <text x="14" y="132" class="sans-bold" font-size="10" fill="#2C4837">www.elavenza.com.au</text>
     </g>
   </g>
 </svg>"""
