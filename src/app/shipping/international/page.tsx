@@ -1,4 +1,0 @@
-import InfoPage from '@/components/storefront/InfoPage';
-import Link from 'next/link';
-export const metadata={title:"A note on international orders.",description:"Check delivery availability before placing an overseas order.",alternates:{canonical:"/shipping/international"}};
-export default function Page(){return <InfoPage eyebrow="DELIVERY & CARE" title="A note on international orders." intro="Check delivery availability before placing an overseas order."><h2>Currently an Australian checkout</h2><p>The current checkout uses Australian delivery details and AUD pricing. International rates and destinations are not yet published.</p><h2>Product restrictions</h2><p>Delivery eligibility can vary by destination and product. Do not assume an essential oil or liquid can be sent internationally simply because it is available in the Australian store.</p><Link className="text-link" href="/shipping">View Australian shipping →</Link></InfoPage>}
